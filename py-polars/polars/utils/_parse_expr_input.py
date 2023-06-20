@@ -71,17 +71,7 @@ def _parse_regular_inputs(
 def _first_input_to_list(
     inputs: IntoExpr | Iterable[IntoExpr],
 ) -> list[IntoExpr]:
-    if inputs is None:
-        warnings.warn(
-            "In the next breaking release, passing `None` as the first expression input will evaluate to `lit(None)`,"
-            " rather than be ignored."
-            " To silence this warning, either pass no arguments or an empty list to retain the current behavior,"
-            " or pass `lit(None)` to opt into the new behavior.",
-            DeprecationWarning,
-            stacklevel=find_stacklevel(),
-        )
-        return []
-    elif not isinstance(inputs, Iterable) or isinstance(inputs, (str, pl.Series)):
+    if not isinstance(inputs, Iterable) or isinstance(inputs, (str, pl.Series)):
         return [inputs]
     else:
         return list(inputs)
