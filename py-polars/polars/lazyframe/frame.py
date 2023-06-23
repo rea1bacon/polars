@@ -3,7 +3,6 @@ from __future__ import annotations
 import contextlib
 import os
 import typing
-import warnings
 from datetime import date, datetime, time, timedelta
 from io import BytesIO, StringIO
 from pathlib import Path
@@ -59,7 +58,6 @@ from polars.utils.various import (
     _in_notebook,
     _prepare_row_count_args,
     _process_null_values,
-    find_stacklevel,
     normalise_filepath,
 )
 
@@ -2040,22 +2038,9 @@ naive plan: (run LazyFrame.explain(optimized=True) to see the optimized plan)
         """
         structify = bool(int(os.environ.get("POLARS_AUTO_STRUCTIFY", 0)))
 
-        if "exprs" in named_exprs:
-            warnings.warn(
-                "passing expressions to `select` using the keyword argument `exprs` is"
-                " deprecated. Use positional syntax instead.",
-                DeprecationWarning,
-                stacklevel=find_stacklevel(),
-            )
-            first_input = named_exprs.pop("exprs")
-            pyexprs = parse_as_list_of_expressions(
-                first_input, *exprs, **named_exprs, __structify=structify
-            )
-        else:
-            pyexprs = parse_as_list_of_expressions(
-                *exprs, **named_exprs, __structify=structify
-            )
-
+        pyexprs = parse_as_list_of_expressions(
+            *exprs, **named_exprs, __structify=structify
+        )
         return self._from_pyldf(self._ldf.select(pyexprs))
 
     def groupby(
@@ -3152,22 +3137,9 @@ naive plan: (run LazyFrame.explain(optimized=True) to see the optimized plan)
         """
         structify = bool(int(os.environ.get("POLARS_AUTO_STRUCTIFY", 0)))
 
-        if "exprs" in named_exprs:
-            warnings.warn(
-                "passing expressions to `with_columns` using the keyword argument"
-                " `exprs` is deprecated. Use positional syntax instead.",
-                DeprecationWarning,
-                stacklevel=find_stacklevel(),
-            )
-            first_input = named_exprs.pop("exprs")
-            pyexprs = parse_as_list_of_expressions(
-                first_input, *exprs, **named_exprs, __structify=structify
-            )
-        else:
-            pyexprs = parse_as_list_of_expressions(
-                *exprs, **named_exprs, __structify=structify
-            )
-
+        pyexprs = parse_as_list_of_expressions(
+            *exprs, **named_exprs, __structify=structify
+        )
         return self._from_pyldf(self._ldf.with_columns(pyexprs))
 
     @typing.no_type_check
