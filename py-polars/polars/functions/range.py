@@ -28,7 +28,6 @@ if TYPE_CHECKING:
     from polars.type_aliases import (
         ClosedInterval,
         IntoExpr,
-        PolarsDataType,
         PolarsIntegerType,
         TimeUnit,
     )
@@ -40,7 +39,7 @@ def arange(
     end: int | Expr | Series,
     step: int = ...,
     *,
-    dtype: PolarsDataType | None = ...,
+    dtype: PolarsIntegerType = ...,
     eager: Literal[False] = ...,
 ) -> Expr:
     ...
@@ -52,7 +51,7 @@ def arange(
     end: int | IntoExpr,
     step: int = ...,
     *,
-    dtype: PolarsDataType | None = ...,
+    dtype: PolarsIntegerType = ...,
     eager: Literal[True],
 ) -> Series:
     ...
@@ -64,29 +63,24 @@ def arange(
     end: int | IntoExpr,
     step: int = ...,
     *,
-    dtype: PolarsDataType | None = ...,
+    dtype: PolarsIntegerType = ...,
     eager: bool,
 ) -> Expr | Series:
     ...
 
 
-@deprecated_alias(low="start", high="end")
 def arange(
     start: int | IntoExpr,
     end: int | IntoExpr,
     step: int = 1,
     *,
-    dtype: PolarsDataType | None = None,
+    dtype: PolarsIntegerType = Int64,
     eager: bool = False,
 ) -> Expr | Series:
     """
     Generate a range of integers.
 
-    .. deprecated:: 0.18.5
-        ``arange`` has been replaced by two new functions: ``int_range`` for generating
-        a single range, and ``int_ranges`` for generating a list column with multiple
-        ranges. ``arange`` will remain available as an alias for `int_range`, which
-        means it will lose the functionality to generate multiple ranges.
+    Alias for :func:`int_range`.
 
     Parameters
     ----------
@@ -97,10 +91,14 @@ def arange(
     step
         Step size of the range.
     dtype
-        Data type of the resulting column. Defaults to ``Int64``.
+        Data type of the range. Defaults to ``Int64``.
     eager
         Evaluate immediately and return a ``Series``. If set to ``False`` (default),
         return an expression instead.
+
+    Returns
+    -------
+    Column of data type ``dtype``.
 
     See Also
     --------
@@ -111,7 +109,7 @@ def arange(
     --------
     >>> pl.arange(0, 3, eager=True)
     shape: (3,)
-    Series: 'arange' [i64]
+    Series: 'int' [i64]
     [
             0
             1
@@ -119,28 +117,7 @@ def arange(
     ]
 
     """
-    # This check is not water-proof, but we cannot check for literal expressions here
-    if not (isinstance(start, int) and isinstance(end, int)):
-        warnings.warn(
-            " `arange` has been replaced by two new functions:"
-            " `int_range` for generating a single range,"
-            " and `int_ranges` for generating a list column with multiple ranges."
-            " `arange` will remain available as an alias for `int_range`, which means its behaviour will change."
-            " To silence this warning, use either of the new functions.",
-            DeprecationWarning,
-            stacklevel=find_stacklevel(),
-        )
-
-    start = parse_as_expression(start)
-    end = parse_as_expression(end)
-    result = wrap_expr(plr.arange(start, end, step))
-
-    if dtype is not None and dtype != Int64:
-        result = result.cast(dtype)
-    if eager:
-        return F.select(result).to_series()
-
-    return result
+    return int_range(start, end, step, dtype=dtype, eager=eager)
 
 
 @overload
@@ -206,7 +183,7 @@ def int_range(
 
     Returns
     -------
-    Column of data type ``Int64``.
+    Column of data type ``dtype``.
 
     See Also
     --------
